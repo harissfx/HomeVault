@@ -348,15 +348,15 @@ export default function App() {
     <div className="min-h-screen bg-vault-bg font-body text-vault-text">
       {/* Header */}
       <header className="border-b border-vault-border">
-        <div className="max-w-4xl mx-auto px-5 py-5 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-5 py-5 flex items-center justify-between flex-wrap gap-y-3">
           <div className="flex items-baseline gap-3">
-            <h1 className="font-display text-4xl font-extrabold tracking-tight uppercase leading-none text-vault-text">
+            <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight uppercase leading-none text-vault-text">
               Vault
             </h1>
             <span className="font-mono text-xs text-vault-muted uppercase tracking-widest">Unit 02</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="hidden xs:flex items-center gap-2 font-mono text-xs uppercase tracking-wider">
               <span
                 className={`h-2 w-2 rounded-full ${
                   connection === 'ok' ? 'bg-vault-ok' : connection === 'down' ? 'bg-vault-danger' : 'bg-vault-muted'
