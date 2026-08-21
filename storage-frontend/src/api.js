@@ -103,8 +103,6 @@ export function isImage(name) {
   return IMAGE_EXT.includes(ext)
 }
 
-// Backend butuh header Authorization, jadi thumbnail gak bisa pakai <img src> polos —
-// ambil sebagai blob dulu baru dikasih ke <img> lewat object URL.
 export async function getFileBlobUrl(filename) {
   const res = await request(`/api/files/${encodeURIComponent(filename)}`)
   const blob = await res.blob()
@@ -117,7 +115,6 @@ export async function downloadFile(filename) {
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  // buang prefix timestamp "1755..-" yang ditambahkan backend biar nama unduhan bersih
   a.download = filename.replace(/^\d+-/, '')
   document.body.appendChild(a)
   a.click()

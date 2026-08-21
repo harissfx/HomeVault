@@ -85,15 +85,10 @@ function cleanName(name) {
   return name.replace(/^\d+-/, '')
 }
 
-// Nama fisik di disk disanitasi jadi ASCII saja; kalau backend sudah nyimpen
-// nama asli di metadata (originalName), pakai itu, kalau belum ada (file lama) fallback.
 function displayName(f) {
   return f.originalName || cleanName(f.name)
 }
 
-// Nama file dari WhatsApp/IG dll bisa panjang banget (contoh:
-// "728861550_18058473980725281_1661645548195098960_n.jpg"). Potong bagian
-// tengahnya biar gak numpuk/overflow di modal atau tempat sempit lainnya.
 function middleTruncate(name, max = 42) {
   if (name.length <= max) return name
   const extMatch = name.match(/\.[a-zA-Z0-9]{1,8}$/)
@@ -152,15 +147,15 @@ export default function App() {
     } catch (e) {}
   }, [theme])
 
-  const [connection, setConnection] = useState('checking') // checking | ok | down
+  const [connection, setConnection] = useState('checking')
   const [files, setFiles] = useState([])
   const [loadingFiles, setLoadingFiles] = useState(true)
   const [error, setError] = useState(null)
   const [dragActive, setDragActive] = useState(false)
-  const [uploads, setUploads] = useState([]) // { id, name, progress, status }
+  const [uploads, setUploads] = useState([])
   const [pendingDelete, setPendingDelete] = useState(null)
   const [toast, setToast] = useState(null)
-  const [thumbs, setThumbs] = useState({}) // { filename: blobUrl }
+  const [thumbs, setThumbs] = useState({}) 
   const [lightboxIndex, setLightboxIndex] = useState(null)
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [storageInfo, setStorageInfo] = useState(null)
@@ -172,8 +167,6 @@ export default function App() {
   const fileInputRef = useRef(null)
   const thumbsRef = useRef({})
 
-  // Ambil thumbnail buat file gambar yang belum punya blob URL, dan buang
-  // blob URL milik file yang udah gak ada di list biar gak bocor memori.
   useEffect(() => {
     let cancelled = false
     const currentNames = new Set(files.map((f) => f.name))
@@ -196,7 +189,6 @@ export default function App() {
         thumbsRef.current[f.name] = url
         setThumbs({ ...thumbsRef.current })
       } catch (e) {
-        // gagal ambil thumbnail, biarin fallback ke ikon generik
       }
     })
 
@@ -231,14 +223,12 @@ export default function App() {
       const info = await getStorageInfo()
       setStorageInfo(info)
     } catch (e) {
-      // Backend lama mungkin belum punya endpoint /api/storage — biarin, gak fatal
       setStorageInfo(null)
     }
     try {
       const data = await getAlbums()
       setAlbums(data.albums || [])
     } catch (e) {
-      // Backend lama mungkin belum punya endpoint /api/albums — biarin, gak fatal
     }
   }, [])
 
@@ -348,14 +338,14 @@ export default function App() {
     <div className="min-h-screen bg-vault-bg font-body text-vault-text">
       {/* Header */}
       <header className="border-b border-vault-border">
-        <div className="max-w-4xl mx-auto px-5 py-5 flex items-center justify-between flex-wrap gap-y-3">
-          <div className="flex items-baseline gap-3">
-            <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight uppercase leading-none text-vault-text">
+        <div className="max-w-4xl mx-auto px-4 sm:px-5 py-4 sm:py-5 flex items-center justify-between flex-wrap gap-y-3">
+          <div className="flex items-baseline gap-2 sm:gap-3">
+            <h1 className="font-display text-2xl xs:text-3xl sm:text-4xl font-extrabold tracking-tight uppercase leading-none text-vault-text">
               Vault
             </h1>
-            <span className="font-mono text-xs text-vault-muted uppercase tracking-widest">Unit 02</span>
+            <span className="hidden xs:inline font-mono text-xs text-vault-muted uppercase tracking-widest">Unit 02</span>
           </div>
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 xs:gap-3 sm:gap-4">
             <div className="hidden xs:flex items-center gap-2 font-mono text-xs uppercase tracking-wider">
               <span
                 className={`h-2 w-2 rounded-full ${
@@ -384,7 +374,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-5 py-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-5 py-6 sm:py-8">
         {connection === 'down' && (
           <div className="mb-6 border border-vault-danger/50 bg-vault-danger/10 rounded-md px-4 py-3 text-sm text-vault-text">
             Tidak bisa menyambung ke <span className="font-mono">{config.baseUrl}</span>. Cek server-nya jalan atau
@@ -429,7 +419,7 @@ export default function App() {
           onDragLeave={() => setDragActive(false)}
           onDrop={onDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`relative cursor-pointer rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors ${
+          className={`relative cursor-pointer rounded-lg border-2 border-dashed px-4 sm:px-6 py-8 sm:py-10 text-center transition-colors ${
             dragActive ? 'border-vault-brass bg-vault-brass/5' : 'border-vault-border bg-vault-surface'
           }`}
         >
@@ -440,8 +430,8 @@ export default function App() {
             className="hidden"
             onChange={(e) => e.target.files?.length && handleFiles(e.target.files)}
           />
-          <UploadCloud className="mx-auto mb-3 text-vault-brass" size={30} strokeWidth={1.5} />
-          <p className="font-display text-2xl uppercase tracking-wide text-vault-text">Slot Penyimpanan</p>
+          <UploadCloud className="mx-auto mb-3 text-vault-brass" size={28} strokeWidth={1.5} />
+          <p className="font-display text-xl sm:text-2xl uppercase tracking-wide text-vault-text">Slot Penyimpanan</p>
           <p className="mt-1 text-sm text-vault-muted">
             Jatuhkan file di sini, atau <span className="text-vault-brass">klik untuk pilih</span>
           </p>
@@ -512,17 +502,20 @@ export default function App() {
 
         {/* Koleksi */}
         <div className="mt-8">
-          <div className="flex items-center justify-between mb-3 flex-wrap gap-3">
-            <h2 className="font-display text-lg uppercase tracking-widest text-vault-muted">
-              {activeAlbum ? activeAlbum.name : 'Koleksi'}
-            </h2>
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-1 rounded-md border border-vault-border p-1">
+          <div className="mb-3 space-y-2.5">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="font-display text-lg uppercase tracking-widest text-vault-muted truncate">
+                {activeAlbum ? activeAlbum.name : 'Koleksi'}
+              </h2>
+              <span className="font-mono text-xs text-vault-muted shrink-0">{visibleFiles.length} berkas</span>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-1 rounded-md border border-vault-border p-1 overflow-x-auto no-scrollbar min-w-0">
                 {CATEGORIES.map((c) => (
                   <button
                     key={c.id}
                     onClick={() => setCategoryFilter(c.id)}
-                    className={`px-3 py-1 rounded text-xs font-mono uppercase tracking-wide transition-colors ${
+                    className={`shrink-0 whitespace-nowrap px-2.5 sm:px-3 py-1 rounded text-xs font-mono uppercase tracking-wide transition-colors ${
                       categoryFilter === c.id
                         ? 'bg-vault-brass text-vault-bg'
                         : 'text-vault-muted hover:text-vault-text'
@@ -534,16 +527,15 @@ export default function App() {
               </div>
               <button
                 onClick={() => (selectMode ? exitSelectMode() : setSelectMode(true))}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono uppercase tracking-wide border transition-colors ${
+                className={`flex items-center gap-1.5 shrink-0 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-mono uppercase tracking-wide border transition-colors ${
                   selectMode
                     ? 'bg-vault-brass text-vault-bg border-vault-brass'
                     : 'border-vault-border text-vault-muted hover:text-vault-text'
                 }`}
               >
-                <CheckSquare size={13} /> {selectMode ? 'Batal Pilih' : 'Pilih'}
+                <CheckSquare size={13} /> <span className="hidden xs:inline">{selectMode ? 'Batal Pilih' : 'Pilih'}</span>
               </button>
             </div>
-            <span className="font-mono text-xs text-vault-muted">{visibleFiles.length} berkas</span>
           </div>
 
           {loadingFiles ? (
@@ -603,10 +595,12 @@ export default function App() {
                             </div>
                           )}
 
-                          {/* Overlay info + aksi, muncul pas hover (disembunyikan pas mode pilih biar gak ganggu) */}
+                          {/* Overlay info + aksi. Selalu tampil di layar sentuh/mobile (gak ada hover),
+                              baru disembunyikan-sampai-hover di layar lebih lebar (desktop/mouse).
+                              Disembunyikan total pas mode pilih biar gak ganggu. */}
                           <div
                             className={`absolute inset-0 flex flex-col justify-between transition-opacity bg-gradient-to-t from-black/70 via-transparent to-transparent ${
-                              selectMode ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
+                              selectMode ? 'opacity-0' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
                             }`}
                           >
                             <div className="flex justify-end gap-1 p-1.5">
@@ -649,7 +643,7 @@ export default function App() {
 
       {toast && (
         <div
-          className={`fixed bottom-5 right-5 rounded-md border px-4 py-3 text-sm font-body shadow-lg animate-stamp ${
+          className={`fixed bottom-4 inset-x-4 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:max-w-sm rounded-md border px-4 py-3 text-sm font-body shadow-lg animate-stamp z-50 ${
             toast.kind === 'ok'
               ? 'border-vault-ok/50 bg-vault-surface text-vault-ok'
               : 'border-vault-danger/50 bg-vault-surface text-vault-danger'
@@ -672,15 +666,15 @@ export default function App() {
       )}
 
       {selectMode && selectedNames.size > 0 && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-full border border-vault-border bg-vault-surface px-5 py-3 shadow-lg">
-          <span className="font-mono text-xs text-vault-muted">{selectedNames.size} dipilih</span>
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 sm:gap-3 rounded-full border border-vault-border bg-vault-surface px-3 sm:px-5 py-2.5 sm:py-3 shadow-lg max-w-[calc(100vw-1.5rem)] whitespace-nowrap">
+          <span className="font-mono text-xs text-vault-muted shrink-0">{selectedNames.size} dipilih</span>
           <button
             onClick={() => setShowCreateAlbum(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono uppercase tracking-wide bg-vault-brass text-vault-bg hover:bg-vault-brassdim"
+            className="flex items-center gap-1.5 shrink-0 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-mono uppercase tracking-wide bg-vault-brass text-vault-bg hover:bg-vault-brassdim"
           >
-            <FolderPlus size={13} /> Buat Koleksi
+            <FolderPlus size={13} /> <span className="hidden xs:inline">Buat Koleksi</span>
           </button>
-          <button onClick={exitSelectMode} className="text-vault-muted hover:text-vault-text text-xs font-mono">
+          <button onClick={exitSelectMode} className="shrink-0 text-vault-muted hover:text-vault-text text-xs font-mono">
             Batal
           </button>
         </div>

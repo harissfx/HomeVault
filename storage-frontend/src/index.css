@@ -38,7 +38,6 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* perforated divider - sisa dari tema lama, gak dipakai lagi tapi gak ganggu */
 .perforated {
   background-image: repeating-linear-gradient(
     to right,
@@ -48,6 +47,14 @@ body {
     transparent 12px
   );
   height: 1px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 ::-webkit-scrollbar {

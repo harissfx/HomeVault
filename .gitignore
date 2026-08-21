@@ -1,25 +1,13 @@
-# Environment variables (isinya API_KEY, jangan sampe ke-push!)
 .env
 .env.local
 .env.*.local
-
-# Dependencies
 node_modules/
-
-# Hasil build frontend (Vite)
 storage-frontend/dist/
-
-# Isi penyimpanan Vault - file upload orang, metadata album, dll
-# (bukan bagian dari kode, gak perlu di-track git)
 storage-api/storage/
 storage-api/.meta.json
 storage-api/.albums.json
-
-# Log
 npm-debug.log*
 *.log
-
-# OS / editor
 .DS_Store
 .vscode/
 .idea/

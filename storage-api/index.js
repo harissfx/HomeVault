@@ -19,18 +19,15 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-// Pastikan folder storage ada
 if (!fs.existsSync(STORAGE_DIR)) {
   fs.mkdirSync(STORAGE_DIR, { recursive: true });
 }
 
 const app = express();
 
-// CORS: hanya izinkan origin yang terdaftar (domain Vercel kamu)
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Izinkan request tanpa origin (contoh: curl, testing lokal)
       if (!origin || ALLOWED_ORIGINS.includes(origin)) {
         return callback(null, true);
       }
@@ -39,15 +36,12 @@ app.use(
   })
 );
 
-// Health check - tidak perlu API key, buat cek server hidup
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
 });
 
-// Parsing body JSON - dibutuhin buat endpoint album (create/rename/dst)
 app.use(express.json());
 
-// Middleware auth - semua endpoint di bawah ini wajib pakai API key
 function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
@@ -58,14 +52,10 @@ function requireAuth(req, res, next) {
   next();
 }
 
-// Cegah path traversal (contoh: ../../etc/passwd)
 function sanitizeFilename(name) {
   return path.basename(name).replace(/[^a-zA-Z0-9._-]/g, "_");
 }
 
-// Metadata sederhana buat nyimpen nama asli file (nama fisik di disk sudah
-// disanitasi jadi ASCII saja, tapi nama asli - termasuk spasi/emoji/huruf non-latin -
-// tetap kepingin ditampilkan ke user).
 const META_PATH = path.join(STORAGE_DIR, ".meta.json");
 
 function loadMeta() {
@@ -80,8 +70,6 @@ function saveMeta(meta) {
   fs.writeFileSync(META_PATH, JSON.stringify(meta, null, 2));
 }
 
-// Album/koleksi: kumpulan nama file yang dipilih manual, dikasih nama.
-// Ini cuma referensi ke nama file yang sudah ada - hapus album gak menghapus filenya.
 const ALBUMS_PATH = path.join(STORAGE_DIR, ".albums.json");
 
 function loadAlbums() {
@@ -96,7 +84,6 @@ function saveAlbums(albums) {
   fs.writeFileSync(ALBUMS_PATH, JSON.stringify(albums, null, 2));
 }
 
-// Setup multer buat handle upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, STORAGE_DIR),
   filename: (req, file, cb) => {
@@ -110,7 +97,6 @@ const upload = multer({
   limits: { fileSize: MAX_FILE_SIZE_MB * 1024 * 1024 },
 });
 
-// GET /api/files - daftar semua file
 app.get("/api/files", requireAuth, (req, res) => {
   try {
     const meta = loadMeta();
@@ -135,13 +121,11 @@ app.get("/api/files", requireAuth, (req, res) => {
   }
 });
 
-// POST /api/upload - upload satu file
 app.post("/api/upload", requireAuth, upload.single("file"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "Tidak ada file yang dikirim. Gunakan field bernama 'file'." });
   }
 
-  // Simpan nama asli (bisa mengandung spasi, emoji, huruf non-latin) di metadata
   const meta = loadMeta();
   meta[req.file.filename] = req.file.originalname;
   saveMeta(meta);
@@ -156,7 +140,6 @@ app.post("/api/upload", requireAuth, upload.single("file"), (req, res) => {
   });
 });
 
-// GET /api/files/:filename - download file
 app.get("/api/files/:filename", requireAuth, (req, res) => {
   const safeName = sanitizeFilename(req.params.filename);
   const filePath = path.join(STORAGE_DIR, safeName);
@@ -167,7 +150,6 @@ app.get("/api/files/:filename", requireAuth, (req, res) => {
   res.download(filePath);
 });
 
-// DELETE /api/files/:filename - hapus file
 app.delete("/api/files/:filename", requireAuth, (req, res) => {
   const safeName = sanitizeFilename(req.params.filename);
   const filePath = path.join(STORAGE_DIR, safeName);
@@ -183,7 +165,6 @@ app.delete("/api/files/:filename", requireAuth, (req, res) => {
     saveMeta(meta);
   }
 
-  // Bersihin referensi file ini dari semua album biar gak jadi entry mati
   const albums = loadAlbums();
   let albumsChanged = false;
   albums.forEach((a) => {
@@ -196,7 +177,6 @@ app.delete("/api/files/:filename", requireAuth, (req, res) => {
   res.json({ message: "File berhasil dihapus" });
 });
 
-// GET /api/albums - daftar semua koleksi/album
 app.get("/api/albums", requireAuth, (req, res) => {
   try {
     res.json({ albums: loadAlbums() });
@@ -205,7 +185,6 @@ app.get("/api/albums", requireAuth, (req, res) => {
   }
 });
 
-// POST /api/albums - bikin album baru dari file-file yang dipilih
 app.post("/api/albums", requireAuth, (req, res) => {
   const { name, fileNames } = req.body || {};
   if (!name || typeof name !== "string" || !name.trim()) {
@@ -228,7 +207,6 @@ app.post("/api/albums", requireAuth, (req, res) => {
   res.json({ message: "Album dibuat", album });
 });
 
-// PATCH /api/albums/:id - ganti nama dan/atau tambah/kurang isi album
 app.patch("/api/albums/:id", requireAuth, (req, res) => {
   const albums = loadAlbums();
   const album = albums.find((a) => a.id === req.params.id);
@@ -253,7 +231,6 @@ app.patch("/api/albums/:id", requireAuth, (req, res) => {
   res.json({ message: "Album diperbarui", album });
 });
 
-// DELETE /api/albums/:id - hapus album (file di dalamnya TIDAK ikut kehapus)
 app.delete("/api/albums/:id", requireAuth, (req, res) => {
   const albums = loadAlbums();
   const next = albums.filter((a) => a.id !== req.params.id);
@@ -264,15 +241,12 @@ app.delete("/api/albums/:id", requireAuth, (req, res) => {
   res.json({ message: "Album dihapus" });
 });
 
-// GET /api/storage - info kapasitas penyimpanan (dipakai buat indikator di UI)
 app.get("/api/storage", requireAuth, (req, res) => {
   try {
     const entries = fs.readdirSync(STORAGE_DIR, { withFileTypes: true });
     const usedByFiles = entries
       .filter((e) => e.isFile() && e.name !== ".meta.json" && e.name !== ".albums.json")
       .reduce((sum, e) => sum + fs.statSync(path.join(STORAGE_DIR, e.name)).size, 0);
-
-    // fs.statfsSync butuh Node 19.6+/18.15+. Kalau gak ada, fallback tanpa info kapasitas total.
     if (typeof fs.statfsSync === "function") {
       const stats = fs.statfsSync(STORAGE_DIR);
       const totalBytes = stats.blocks * stats.bsize;
@@ -291,7 +265,6 @@ app.get("/api/storage", requireAuth, (req, res) => {
   }
 });
 
-// Error handler multer (contoh: file kelebihan ukuran)
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     return res.status(400).json({ error: `Upload error: ${err.message}` });
