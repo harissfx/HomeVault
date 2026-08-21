@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --vault-bg: 255 255 255;
+  --vault-surface: 241 243 244;
+  --vault-surface2: 232 234 237;
+  --vault-border: 218 220 224;
+  --vault-text: 32 33 36;
+  --vault-muted: 95 99 104;
+  --vault-brass: 26 115 232;
+  --vault-brassdim: 23 101 204;
+  --vault-ok: 30 142 62;
+  --vault-danger: 217 48 37;
+}
+
+.dark {
+  --vault-bg: 32 33 36;
+  --vault-surface: 40 41 44;
+  --vault-surface2: 49 50 53;
+  --vault-border: 60 64 67;
+  --vault-text: 232 234 237;
+  --vault-muted: 154 160 166;
+  --vault-brass: 138 180 248;
+  --vault-brassdim: 102 157 246;
+  --vault-ok: 129 201 149;
+  --vault-danger: 242 139 130;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: rgb(var(--vault-bg));
+  color: rgb(var(--vault-text));
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* perforated divider - sisa dari tema lama, gak dipakai lagi tapi gak ganggu */
+.perforated {
+  background-image: repeating-linear-gradient(
+    to right,
+    rgb(var(--vault-border)) 0px,
+    rgb(var(--vault-border)) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  height: 1px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(var(--vault-bg));
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--vault-border));
+  border-radius: 999px;
+}
+
+@keyframes stamp-in {
+  0% { opacity: 0; transform: scale(1.4) rotate(-8deg); }
+  60% { opacity: 1; transform: scale(0.95) rotate(-8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-8deg); }
+}
+.animate-stamp {
+  animation: stamp-in 0.35s ease-out;
+}
